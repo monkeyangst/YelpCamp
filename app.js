@@ -17,7 +17,10 @@ var commentRoutes       =   require("./routes/comments"),
     indexRoutes         =   require("./routes/index");
 
 // App Setup
-mongoose.connect("mongodb://localhost:27017/yelp_camp", {
+    var dbUrl = "mongodb+srv://bhawkins-mongo:UnpWf-xWWE2m@cluster0-wovql.mongodb.net/yelp_camp";
+    // var dbUrl = "mongodb://localhost:27017/yelp_camp";
+
+mongoose.connect(dbUrl, {
     useNewUrlParser: true ,
     useUnifiedTopology: true,
     useFindAndModify: false
