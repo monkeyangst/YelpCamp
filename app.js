@@ -1,3 +1,6 @@
+// Environment
+require("dotenv").config();
+
 // Variable Declarations
 var express         =   require("express"),
     app             =   express(),
@@ -16,8 +19,10 @@ var commentRoutes       =   require("./routes/comments"),
     campgroundRoutes    =   require("./routes/campgrounds"),
     indexRoutes         =   require("./routes/index");
 
+
 // App Setup
-mongoose.connect(process.env.DATABASEURL, {
+var dbURL = process.env.DATABASEURL || "mongodb://localhost:27017/yelp_camp";
+mongoose.connect(dbURL, {
     useNewUrlParser: true ,
     useUnifiedTopology: true,
     useFindAndModify: false
