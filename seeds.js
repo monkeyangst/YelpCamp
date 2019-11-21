@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 var Campground = require("./models/campground");
 var Comment = require("./models/comment");
 
-var data = [
+var campgroundSeeds = [
     {
         name: "Cloud's Rest",
         image: "https://farm4.staticflickr.com/3795/10131087094_c1c0a1c859.jpg",
@@ -20,40 +20,32 @@ var data = [
     }
 ];
 
-function seedDB() {
-    // remove all campgrounds
-    Campground.deleteMany({}, function(err) {
-        // if(err) {
-        //     console.log(err);
-        // } else {
-        //     console.log("Removed all campgrounds");
-        //     // add a few campgrounds
-        //     data.forEach(function(seed) {
-        //         Campground.create(seed, function(err,campground) {
-        //             if (err) {
-        //                 console.log(err);
-        //             } else {
-        //                 console.log("Added " + seed.name);
-        //                 // create a comment
-        //                 Comment.create(
-        //                     {
-        //                         text: "This place is great but I wish there were internet",
-        //                         author: "Homer"
-        //                     }, function(err,comment) {
-        //                     if(err) {
-        //                         console.log(err);
-        //                     } else {
-        //                         campground.comments.push(comment);
-        //                         campground.save();
-        //                         console.log("Created a new comment");
-        //                     }
-        //                 });
-        //             }
-        //         });
-        //     });
-        // }
-    });
+async function seedDB() {
+    try {
+        // remove all comments
+        await Comment.remove({});
+        console.log("Comments removed");
 
+        // remove all campgrounds
+        await Campground.deleteMany({});
+        console.log("Campgrounds removed");
+        for(const seed of campgroundSeeds) {
+            let campground = await Campground.create(seed);
+            console.log("Campground created");
+            let comment = await Comment.create(
+                {
+                    text: "This place is great but I wish there were internet",
+                    author: "Homer"
+                }
+            );
+            console.log("Comment created");
+            campground.comments.push(comment);
+            campground.save();
+            console.log("Comment added to campground");
+        }
+    } catch(err) {
+        console.log(err);
+    }
 }
 
 module.exports = seedDB;
