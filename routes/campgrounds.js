@@ -111,7 +111,7 @@ router.get("/:id", function(req,res) {
             req.flash("error", "Campground not found");
             res.redirect("/campgrounds");
         } else {
-            res.render("campgrounds/show", {campground: foundCampground});
+            res.render("campgrounds/show", {campground: foundCampground, mapKey: process.env.GOOGLE_MAPS_API_KEY});
         }
     });
 });
