@@ -17,7 +17,32 @@ var geocoder = NodeGeocoder(options);
 // All routes prepended with /campgrounds
 
 // INDEX route - show all campgrounds
-router.get("/", function(req,res) {
+router.get("/",  function(req,res) {
+  if (req.query.search) {
+    const regex = new RegExp(escapeRegex(req.query.search), 'gi');
+    // get campgrounds that match search query
+    Campground.find({ name: regex }, function(err,foundCampgrounds) {
+        if (err) {
+            console.log(err);
+        } else {
+          if (foundCampgrounds.length < 1) {
+            res.render("campgrounds/index", {
+              page: 'campgrounds',
+              campgrounds: [],
+              notFound: 'No Campgrounds found that match that criteria'
+            });
+          } else {
+            res.render("campgrounds/index", {
+              page: 'campgrounds',
+              campgrounds: foundCampgrounds,
+              notFound: false
+            });
+
+          }
+
+        }
+    });
+  } else {
     // get all campgrounds from db
     Campground.find({}, function(err,allCampgrounds) {
         if (err) {
@@ -25,10 +50,12 @@ router.get("/", function(req,res) {
         } else {
             res.render("campgrounds/index", {
               page: 'campgrounds',
-              campgrounds: allCampgrounds
+              campgrounds: allCampgrounds,
+              notFound: false
             });
         }
     });
+  }
 });
 
 // NEW route - display new-campground form
@@ -37,7 +64,8 @@ router.get("/new", middleware.isLoggedIn, function(req,res) {
 });
 
 // CREATE route - add new campground to db
-router.post("/", middleware.isLoggedIn, function(req,res) {
+ router.post("/", middleware.isLoggedIn, async function(req,res) {
+    console.log('READY TO CREATE CAMPGOUND');
     //get data from form and add to campgrounds array
     var name = req.body.name;
     var price = req.body.price;
@@ -48,15 +76,11 @@ router.post("/", middleware.isLoggedIn, function(req,res) {
         id: req.user._id,
         username: req.user.username
     };
-    geocoder.geocode(req.body.location, function (err,data) {
-        if (err || !data.length) {
-            req.flash("error", "Invalid address");
-            return res.redirect("back");
-        }
-        var lat = data[0].latitude;
-        var lng = data[0].longitude;
-        var location = data[0].formattedAddress;
-    })
+    let data = await geocoder.geocode(req.body.location);
+    console.log("GOT GEOCODING DATA BACK");
+    var lat = data[0].latitude;
+    var lng = data[0].longitude;
+    var location = data[0].formattedAddress;
     var newCampground =
         {
             name: name,
@@ -134,6 +158,10 @@ router.delete("/:id", middleware.checkCampgroundOwnership, function(req,res) {
         res.redirect("/campgrounds");
     })
 });
+
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
 
 
 module.exports = router;
